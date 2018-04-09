@@ -64,6 +64,8 @@ resource "aws_security_group" "nat" {
         protocol   = "icmp"
         cidr_blocks = ["0.0.0.0/0"]
     }
+    
+    vpc_id = "${aws_vpc.default.id}"
 
     tags {
         Name = "NAT-SG"
@@ -76,6 +78,14 @@ resource "aws_instance" "nat" {
     key_name = "${var.aws_key_name}"
     availability_zone = "us-west-1a"
     instance_type = "t2.micro"
+    vpc_security_group_ids = ["${aws_security_group.nat.id}"]
+    subnet_id = "${aws_subnet.us-west-1a-public-staging.id}"
+    associate_public_ip_address = true
+    source_dest_check = false
+
+    tags {
+        Name = "VPC NAT"
+    }
 }
 
 resource "aws_eip" "nat" {

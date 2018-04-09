@@ -3,7 +3,7 @@ resource "aws_vpc" "default" {
     enable_dns_hostnames = true
 
     tags {
-        Name = "default-vpc-staging"
+        Name = "Default VPC Staging"
     }
 }
 
@@ -27,7 +27,7 @@ resource "aws_route_table" "us-west-1a-public-staging" {
     vpc_id = "${aws_vpc.default.id}"
     
     route {
-      cidr_block = "${var.public_subnet_cidr_staging}"
+      cidr_block = "0.0.0.0/0"
       gateway_id = "${aws_internet_gateway.default.id}"
     }
 
@@ -51,7 +51,7 @@ resource "aws_route_table" "us-west-1a-private-staging" {
     vpc_id = "${aws_vpc.default.id}"
 
     route {
-        cidr_block = "${var.private_subnet_cidr_staging}"
+        cidr_block = "0.0.0.0/0"
         instance_id = "${aws_instance.nat.id}"
     }
 
