@@ -1,25 +1,43 @@
-# IaaS with Terraform Example
 
-## Purpose
-The goal of this project is to learn about Terraform and how it can be used to manage infrastructure resources hosted on AWS.
-In the end you should have built an AWS VPC with a public and private subnet.  Within the public subnet you have your internet facing web servers that are hosted on EC2.
-Within the private subnet you have your database tier, accessible via a bastion through SSH-forwarding and inaccessible from the outside world.
+## Setting up Terraform Remote State
 
-For the sake of this example, we will only create the staging environment, however, this can easily be replicated to production.
+Terraform generates a file in your project directory named terraform.tfstate.  This is a special file as it tells Terraform of the current state of the infrastructure.
+When you make changes to your infrastructure via the command: [terraform apply] this file is updated to reflect those changes.  
 
-### Prerequisites and Assumptions 
-    - This project assumes that you are familiar with Hashicorp's tool Packer and know how to validate and build an AMI from a json template.
-    - If you need a quick introduction to Packer refer to the documentation on getting Packer up and running here at: [INSERT URL]
+## Prerequisites
+    - This demonstration assumes that you have an AWS account. While I do try to stay within the AWS Free-Tier, not all resources will be free.  Remember to destroy any resources
+that are no longer in use via the command: [terraform destroy].
+    - This demonstration uses the AWS CLI to create a bucket on S3.
+    - Resources are launched in us-west-1
 
-    - This project assumes that you are familiar with the building blocks associated with AWS such as VPC (as well as the components of a VPC), EC2, Security Groups, etc.
-    - This project also assumes that you already have already created an  AWS account.  If not begin by following the tutorial found here: [INSERT URL] 
+There are a few important things to know when working with Terraform.
+    1. the terraform.tfstate file is stored as plaintext.  This means that any sensitive data such as database passwords will show up in this file. 
+    Luckily, Terraform supports storing this file remotely via Remote State using S3, Consul, etc.
 
-    - Lastly, I try to make use of the AWS free tier as best as I can, however some of these may charge you.  When you aren't using your resources remember to destroy them.
+    Setting up buckets on S3 with versioning enabled:
 
-### Installing
+        1. Creates the following buckets in the us-west-1 region
+
+            aws s3api create-bucket --bucket terraform-remote-state-storage-s3-test-vpc --region us-west-1
+            aws s3api create-bucket --bucket terraform-remot3-state-storage-s3-test-services --region us-west-1
+
+        2. Enable versioning on the created buckets with the following command:
+            
+            aws s3api put-bucket-versioning --bucket terraform-remote-state-storage-s3-test-vpc --versioning-configuration Status=Enabled
+            aws s3api put-bucket-versioning --bucket terraform-remote-state-storage-s3-test-services --versioning-configuration Status=Enabled
+
+        3. Now that you've created the correct buckets, when you run [terraform apply] your terraform.tfstate file will be stored remotely in S3.  The local terraform.tfstate is no longer need and may be deleted.
+        If this project is going up on github you will also have to ignore it via your .gitignore file.
+        
+## Setting up State Locking with DynamoDB
+    1. If you are working on a team and using Terraform you will want to utilize locking state.  Since Terraform relies on the terraform.tfstate file to build infrastructure you
+    want to have a consistent state file across developers.  By setting up locking state you can ensure that only one person can make changes to the state file at a given time.  This ensures that you don't rollback accidently or 
+    lose data unexpectedly.
+
+## Creating a base AMI with Packer
+    TODO: For the sake of this tutorial, replace packer amis with a public official aws linux ami.
+
+## Launching VPC with Terraform
     
 
-## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-
+## Launching Resources into the VPC with Terraform
