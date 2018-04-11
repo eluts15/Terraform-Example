@@ -1,5 +1,6 @@
 # Ignore vim swap files
 *.swp
+*.swo
 
 # Ignore tfstate files
 .terraform
